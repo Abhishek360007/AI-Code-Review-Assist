@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Code Review Assist Demo</title>
+<meta name="description" content="A captioned walkthrough of AI Code Review Assist: structured AI code reviews with severity, exact line numbers, suggested fixes and an insights dashboard.">
+<meta property="og:title" content="AI Code Review Assist: product demo">
+<meta property="og:description" content="Structured AI code reviews with severity, exact line numbers and a fix for every issue.">
+<meta property="og:image" content="https://abhishek360007.github.io/AI-Code-Review-Assist/screenshots/review.png">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f766e'/%3E%3Cpath d='M11 10l-5 6 5 6M21 10l5 6-5 6' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M13.5 16.5l2 2 4-5' fill='none' stroke='%235eead4' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #071417;
+    --text: #ffffff;
+    --muted: rgba(226, 240, 238, 0.74);
+    --faint: rgba(226, 240, 238, 0.5);
+    --accent: #5eead4;
+    --card: rgba(255, 255, 255, 0.05);
+    --border: rgba(255, 255, 255, 0.1);
+    --primary: #0f766e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    font-family: Inter, system-ui, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(60% 40% at 10% 0%, rgba(20, 184, 166, 0.32) 0%, transparent 70%),
+      radial-gradient(50% 40% at 100% 100%, rgba(37, 99, 235, 0.24) 0%, transparent 70%),
+      var(--bg);
+    line-height: 1.55;
+  }
+  main { max-width: 1120px; margin: 0 auto; padding: 48px 16px 64px; }
+  .eyebrow { color: var(--accent); font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; font-size: 13px; }
+  h1 { font-size: clamp(32px, 5vw, 52px); letter-spacing: -0.03em; line-height: 1.1; margin: 10px 0 12px; }
+  .lead { color: var(--muted); font-size: 18px; max-width: 780px; }
+  .player {
+    margin: 32px 0 20px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.8);
+    background: #000;
+  }
+  video { display: block; width: 100%; height: auto; aspect-ratio: 1440 / 900; }
+  .links { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 40px; }
+  .links a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+  .links a.primary { background: var(--primary); border-color: var(--primary); }
+  .links a:hover { border-color: var(--accent); }
+  h2 { font-size: 20px; letter-spacing: -0.015em; margin-bottom: 14px; }
+  ol { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 10px; }
+  li { display: flex; gap: 12px; align-items: baseline; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 15px; }
+  li b { color: var(--text); font-weight: 600; }
+  li span { flex-shrink: 0; color: var(--accent); font-weight: 700; font-size: 13px; min-width: 22px; }
+  footer { margin-top: 48px; color: var(--faint); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Product demo · 2 min 4 s</div>
+  <h1>AI Code Review Assist</h1>
+  <p class="lead">Paste code in any of 16 languages and get a structured AI review: a quality score, issues ranked by severity with the exact line and a concrete fix, plus a corrected version of the whole file. Every step below is captioned in the video.</p>
+
+  <div class="player">
+    <video controls preload="metadata" playsinline poster="demo-preview.gif">
+      <source src="ai-code-review-assist-demo.mp4" type="video/mp4">
+      Your browser can't play this video. <a href="ai-code-review-assist-demo.mp4">Download it instead.</a>
+    </video>
+  </div>
+
+  <div class="links">
+    <a class="primary" href="https://github.com/Abhishek360007/AI-Code-Review-Assist">Source code on GitHub</a>
+    <a href="https://ai-code-review-assist.onrender.com">Live app</a>
+  </div>
+
+  <h2>What the video shows</h2>
+  <ol>
+    <li><span>01</span><div><b>Secure sign-in</b>: stateless JWT authentication</div></li>
+    <li><span>02</span><div><b>16 languages</b>, each with a built-in demo snippet</div></li>
+    <li><span>03</span><div><b>Google Gemini</b> with structured JSON output and fallback models</div></li>
+    <li><span>04</span><div><b>Live review</b>: code sent with line numbers</div></li>
+    <li><span>05</span><div><b>Instant verdict</b>: score, summary, severity breakdown</div></li>
+    <li><span>06</span><div><b>Line-accurate findings</b>: click to jump to the line</div></li>
+    <li><span>07</span><div><b>Severity filters</b> to focus on what matters</div></li>
+    <li><span>08</span><div><b>Suggested version</b>: corrected file as a diff</div></li>
+    <li><span>09</span><div><b>Review history</b> with search and filters</div></li>
+    <li><span>10</span><div><b>Insights dashboard</b>: trends and breakdowns</div></li>
+    <li><span>11</span><div><b>Light and dark themes</b></div></li>
+  </ol>
+
+  <footer>Built by Abhishek Raj · Java 17 · Spring Boot 3 · Spring Security + JWT · Google Gemini · React 18 · PostgreSQL (Neon) · Docker · GitHub Actions · Render</footer>
+</main>
+</body>
+</html>
