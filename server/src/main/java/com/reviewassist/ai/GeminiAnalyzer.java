@@ -106,6 +106,7 @@ public class GeminiAnalyzer implements CodeAnalyzer {
         models.addAll(fallbackModels);
 
         int lastStatus = 0;
+        Set<Integer> seen = new java.util.HashSet<>();
         for (String candidate : models) {
             for (int attempt = 1; attempt <= ATTEMPTS_PER_MODEL; attempt++) {
                 long started = System.nanoTime();
@@ -119,6 +120,7 @@ public class GeminiAnalyzer implements CodeAnalyzer {
                     return parse(response, candidate);
                 } catch (RestClientResponseException e) {
                     lastStatus = e.getStatusCode().value();
+                    seen.add(lastStatus);
                     log.warn("Gemini model {} returned {} (attempt {}/{}): {}", candidate, lastStatus, attempt,
                             ATTEMPTS_PER_MODEL, firstLine(e.getResponseBodyAsString()));
                     if (lastStatus == 404 || lastStatus == 429) {
@@ -134,6 +136,7 @@ public class GeminiAnalyzer implements CodeAnalyzer {
                     }
                 } catch (ResourceAccessException e) {
                     lastStatus = -1;
+                    seen.add(-1);
                     long elapsedMs = (System.nanoTime() - started) / 1_000_000;
                     Throwable cause = e.getMostSpecificCause();
                     log.warn("Gemini model {} failed after {} ms (attempt {}/{}): {}", candidate, elapsedMs, attempt,
@@ -147,6 +150,11 @@ public class GeminiAnalyzer implements CodeAnalyzer {
                     break;
                 }
             }
+        }
+        // Every model failed. Report the overall picture rather than just the last model's error.
+        if (seen.size() > 1) {
+            throw new AnalysisException("All AI models are busy or out of today's free quota right now. "
+                    + "Please try again in a minute.");
         }
         if (lastStatus == -1) {
             throw new AnalysisException("The AI provider did not respond in time. Please try again in a minute.");

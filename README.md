@@ -142,7 +142,7 @@ All settings come from environment variables:
 | `JWT_TTL` | `12h` | Token lifetime |
 | `GEMINI_API_KEY` | empty | Google AI Studio key. Leave empty for demo mode |
 | `GEMINI_MODEL` | `gemini-flash-latest` | Any Gemini model that supports structured output |
-| `GEMINI_FALLBACK_MODELS` | `gemini-flash-lite-latest,gemini-3.5-flash` | Tried in order if the main model is overloaded (with automatic retry) |
+| `GEMINI_FALLBACK_MODELS` | `gemini-flash-lite-latest,gemini-3.1-flash-lite,gemini-3.5-flash` | Tried in order if the main model is overloaded (with automatic retry) |
 | `AI_PROVIDER` | `auto` | `auto`, `gemini` or `demo` |
 | `DATABASE_URL` | empty | Postgres connection string, e.g. from Neon: `postgresql://user:pass@host/db?sslmode=require`. Takes priority over the `DB_*` variables |
 | `DB_URL` / `DB_USER` / `DB_PASSWORD` | local `reviewassist` | Alternative: JDBC URL plus credentials (or `DB_HOST` / `DB_PORT` / `DB_NAME`) |
