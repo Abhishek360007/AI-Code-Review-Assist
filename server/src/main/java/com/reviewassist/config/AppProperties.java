@@ -20,7 +20,7 @@ public record AppProperties(Jwt jwt, Cors cors, Review review, Ai ai) {
     public record Ai(String provider, Gemini gemini) {
     }
 
-    public record Gemini(String apiKey, String model, String baseUrl, Duration timeout) {
+    public record Gemini(String apiKey, String model, List<String> fallbackModels, String baseUrl, Duration timeout) {
         public boolean hasKey() {
             return apiKey != null && !apiKey.isBlank();
         }

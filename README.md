@@ -84,6 +84,7 @@ All settings come from environment variables:
 | `JWT_TTL` | `12h` | Token lifetime |
 | `GEMINI_API_KEY` | empty | Google AI Studio key. Leave empty for demo mode |
 | `GEMINI_MODEL` | `gemini-flash-latest` | Any Gemini model that supports structured output |
+| `GEMINI_FALLBACK_MODELS` | `gemini-flash-lite-latest,gemini-3.5-flash` | Tried in order if the main model is overloaded (with automatic retry) |
 | `AI_PROVIDER` | `auto` | `auto`, `gemini` or `demo` |
 | `DB_URL` / `DB_USER` / `DB_PASSWORD` | local `reviewassist` | PostgreSQL connection |
 | `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated allowed origins |

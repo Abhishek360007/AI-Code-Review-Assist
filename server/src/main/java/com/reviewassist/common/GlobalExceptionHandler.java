@@ -1,5 +1,6 @@
 package com.reviewassist.common;
 
+import com.reviewassist.ai.AnalysisException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
     public ProblemDetail handleApi(ApiException ex) {
-        if (ex.getStatus().is5xxServerError()) {
+        if (ex instanceof AnalysisException) {
+            // The analyzer already logged the provider's details; a stack trace adds nothing.
+            log.warn("Review failed: {}", ex.getMessage());
+        } else if (ex.getStatus().is5xxServerError()) {
             log.warn("Request failed: {}", ex.getMessage(), ex.getCause());
         }
         return ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());

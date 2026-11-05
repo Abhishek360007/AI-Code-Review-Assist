@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Reviews code with Google Gemini using structured output: the response schema is sent with the
@@ -49,12 +50,21 @@ public class GeminiAnalyzer implements CodeAnalyzer {
               in the same language, with no markdown fences. Use an empty string if no changes are needed.
             """;
 
+    /** HTTP statuses that mean "try again / try another model" rather than "your request is wrong". */
+    private static final Set<Integer> RETRYABLE = Set.of(429, 500, 502, 503, 504);
+    private static final int ATTEMPTS_PER_MODEL = 2;
+    private static final long BACKOFF_MS = 1500;
+
     private final RestClient client;
     private final String model;
+    private final List<String> fallbackModels;
     private final ObjectMapper mapper;
 
     public GeminiAnalyzer(AppProperties.Gemini config, ObjectMapper mapper) {
         this.model = config.model();
+        this.fallbackModels = config.fallbackModels() == null ? List.of()
+                : config.fallbackModels().stream().map(String::trim)
+                .filter(m -> !m.isEmpty() && !m.equals(config.model())).toList();
         this.mapper = mapper;
 
         Duration timeout = config.timeout() == null ? Duration.ofSeconds(60) : config.timeout();
@@ -85,22 +95,62 @@ public class GeminiAnalyzer implements CodeAnalyzer {
                         "responseMimeType", "application/json",
                         "responseSchema", responseSchema()));
 
-        JsonNode response;
-        try {
-            response = client.post()
-                    .uri("/models/{model}:generateContent", model)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(body)
-                    .retrieve()
-                    .body(JsonNode.class);
-        } catch (RestClientResponseException e) {
-            log.warn("Gemini returned {}: {}", e.getStatusCode(), e.getResponseBodyAsString());
-            throw new AnalysisException(describeHttpError(e.getStatusCode().value()), e);
-        } catch (ResourceAccessException e) {
-            throw new AnalysisException("Could not reach the AI provider (timeout or network error). Please try again.", e);
-        }
+        List<String> models = new ArrayList<>();
+        models.add(model);
+        models.addAll(fallbackModels);
 
-        return parse(response);
+        int lastStatus = 0;
+        for (String candidate : models) {
+            for (int attempt = 1; attempt <= ATTEMPTS_PER_MODEL; attempt++) {
+                try {
+                    JsonNode response = client.post()
+                            .uri("/models/{model}:generateContent", candidate)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(body)
+                            .retrieve()
+                            .body(JsonNode.class);
+                    return parse(response, candidate);
+                } catch (RestClientResponseException e) {
+                    lastStatus = e.getStatusCode().value();
+                    log.warn("Gemini model {} returned {} (attempt {}/{}): {}", candidate, lastStatus, attempt,
+                            ATTEMPTS_PER_MODEL, firstLine(e.getResponseBodyAsString()));
+                    if (lastStatus == 404) {
+                        break; // model not available to this key - try the next one
+                    }
+                    if (!RETRYABLE.contains(lastStatus)) {
+                        throw new AnalysisException(describeHttpError(lastStatus), e);
+                    }
+                    if (attempt < ATTEMPTS_PER_MODEL) {
+                        sleep(BACKOFF_MS * attempt);
+                    }
+                } catch (ResourceAccessException e) {
+                    throw new AnalysisException("Could not reach the AI provider (timeout or network error). Please try again.", e);
+                }
+            }
+        }
+        throw new AnalysisException(describeHttpError(lastStatus));
+    }
+
+    /** Pulls the human-readable "message" out of a Gemini error body for compact logging. */
+    private String firstLine(String errorBody) {
+        try {
+            String message = mapper.readTree(errorBody).path("error").path("message").asText("");
+            if (!message.isEmpty()) {
+                return message;
+            }
+        } catch (JsonProcessingException ignored) {
+            // fall through
+        }
+        return errorBody.length() > 300 ? errorBody.substring(0, 300) + "..." : errorBody;
+    }
+
+    private static void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AnalysisException("Review was interrupted");
+        }
     }
 
     private static String userPrompt(String language, String code, String context) {
@@ -148,7 +198,7 @@ public class GeminiAnalyzer implements CodeAnalyzer {
         return Map.of("type", "STRING", "enum", Arrays.stream(values).map(Enum::name).toList());
     }
 
-    private AnalysisResult parse(JsonNode response) {
+    private AnalysisResult parse(JsonNode response, String usedModel) {
         if (response == null) {
             throw new AnalysisException("The AI provider returned an empty response");
         }
@@ -190,7 +240,7 @@ public class GeminiAnalyzer implements CodeAnalyzer {
 
         int score = Math.max(0, Math.min(100, json.path("score").asInt(50)));
         String improved = stripFences(json.path("improvedCode").asText(""));
-        return new AnalysisResult(score, json.path("summary").asText(""), issues, strengths, improved, model);
+        return new AnalysisResult(score, json.path("summary").asText(""), issues, strengths, improved, usedModel);
     }
 
     private static <E extends Enum<E>> E parseEnum(Class<E> type, String raw, E fallback) {
@@ -219,6 +269,7 @@ public class GeminiAnalyzer implements CodeAnalyzer {
             case 400, 401, 403 -> "The AI provider rejected the request - check that GEMINI_API_KEY is valid";
             case 404 -> "The configured Gemini model was not found - check GEMINI_MODEL";
             case 429 -> "The AI provider's rate limit was reached. Please wait a minute and try again.";
+            case 503 -> "The AI models are overloaded right now (high demand on Google's side). Please try again in a minute.";
             default -> "The AI provider is unavailable right now (HTTP " + status + "). Please try again.";
         };
     }
