@@ -121,8 +121,10 @@ public class GeminiAnalyzer implements CodeAnalyzer {
                     lastStatus = e.getStatusCode().value();
                     log.warn("Gemini model {} returned {} (attempt {}/{}): {}", candidate, lastStatus, attempt,
                             ATTEMPTS_PER_MODEL, firstLine(e.getResponseBodyAsString()));
-                    if (lastStatus == 404) {
-                        break; // model not available to this key - try the next one
+                    if (lastStatus == 404 || lastStatus == 429) {
+                        // 404: model not available to this key. 429: this model's quota is used up, and
+                        // retrying within seconds won't help. Either way, try the next model straight away.
+                        break;
                     }
                     if (!RETRYABLE.contains(lastStatus)) {
                         throw new AnalysisException(describeHttpError(lastStatus), e);
