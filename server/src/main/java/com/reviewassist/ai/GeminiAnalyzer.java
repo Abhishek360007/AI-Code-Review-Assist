@@ -47,7 +47,9 @@ public class GeminiAnalyzer implements CodeAnalyzer {
             - "score" is 0-100: 90+ production ready, 70-89 minor issues, 40-69 significant issues, <40 serious defects.
             - "strengths" lists up to 3 things the code does well (can be empty).
             - "improvedCode" is the complete corrected version of the code with the important issues fixed,
-              in the same language, with no markdown fences. Use an empty string if no changes are needed.
+              in the same language, with no markdown fences and no line-number prefixes. Keep the original
+              formatting: one statement per line, the same indentation style, and real line breaks (\\n).
+              Never put the whole file on one line. Use an empty string if no changes are needed.
             """;
 
     /** HTTP statuses that mean "try again / try another model" rather than "your request is wrong". */
@@ -117,7 +119,7 @@ public class GeminiAnalyzer implements CodeAnalyzer {
                             .body(body)
                             .retrieve()
                             .body(JsonNode.class);
-                    return parse(response, candidate);
+                    return parse(response, candidate, (int) code.lines().count());
                 } catch (RestClientResponseException e) {
                     lastStatus = e.getStatusCode().value();
                     seen.add(lastStatus);
@@ -229,7 +231,7 @@ public class GeminiAnalyzer implements CodeAnalyzer {
         return Map.of("type", "STRING", "enum", Arrays.stream(values).map(Enum::name).toList());
     }
 
-    private AnalysisResult parse(JsonNode response, String usedModel) {
+    private AnalysisResult parse(JsonNode response, String usedModel, int originalLineCount) {
         if (response == null) {
             throw new AnalysisException("The AI provider returned an empty response");
         }
@@ -271,6 +273,11 @@ public class GeminiAnalyzer implements CodeAnalyzer {
 
         int score = Math.max(0, Math.min(100, json.path("score").asInt(50)));
         String improved = stripFences(json.path("improvedCode").asText(""));
+        if (looksCollapsed(improved, originalLineCount)) {
+            log.warn("Model {} returned improvedCode collapsed onto {} line(s) for a {}-line file; discarding it",
+                    usedModel, improved.lines().count(), originalLineCount);
+            improved = "";
+        }
         return new AnalysisResult(score, json.path("summary").asText(""), issues, strengths, improved, usedModel);
     }
 
@@ -280,6 +287,18 @@ public class GeminiAnalyzer implements CodeAnalyzer {
         } catch (IllegalArgumentException e) {
             return fallback;
         }
+    }
+
+    /**
+     * Smaller models sometimes squash the corrected file onto one or two lines. Shown as a diff, that
+     * looks like the whole file was deleted, so such output is treated as "no suggestion".
+     */
+    static boolean looksCollapsed(String improved, int originalLines) {
+        if (improved == null || improved.isBlank() || originalLines < 6) {
+            return false;
+        }
+        long lines = improved.strip().lines().count();
+        return lines * 4 < originalLines;
     }
 
     /** The schema asks for raw code, but models occasionally wrap it in ``` fences anyway. */
