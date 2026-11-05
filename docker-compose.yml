@@ -27,7 +27,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-reviewassist}
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (see .env.example)}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-flash-latest}
       AI_PROVIDER: ${AI_PROVIDER:-auto}
       CORS_ORIGINS: http://localhost:3000
     ports:

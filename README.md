@@ -83,7 +83,7 @@ All settings come from environment variables:
 | `JWT_SECRET` | none (**required**) | HMAC signing key, at least 32 characters |
 | `JWT_TTL` | `12h` | Token lifetime |
 | `GEMINI_API_KEY` | empty | Google AI Studio key. Leave empty for demo mode |
-| `GEMINI_MODEL` | `gemini-2.5-flash` | Any Gemini model that supports structured output |
+| `GEMINI_MODEL` | `gemini-flash-latest` | Any Gemini model that supports structured output |
 | `AI_PROVIDER` | `auto` | `auto`, `gemini` or `demo` |
 | `DB_URL` / `DB_USER` / `DB_PASSWORD` | local `reviewassist` | PostgreSQL connection |
 | `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated allowed origins |
@@ -126,7 +126,7 @@ Example response (trimmed):
   ],
   "strengths": ["Uses async/await consistently"],
   "improvedCode": "async function getOrderTotal(db, userId) { ... }",
-  "engine": "gemini-2.5-flash",
+  "engine": "gemini-flash-latest",
   "durationMs": 3120
 }
 ```
