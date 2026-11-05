@@ -2,7 +2,7 @@
 
 A full-stack app that reviews source code with AI and returns a **structured** report instead of a wall of text. Every issue has a severity, a category, the exact line it starts on and a concrete fix. You also get a corrected version of the whole file, shown as a diff against your original.
 
-![stack](https://img.shields.io/badge/Java-17-orange) ![stack](https://img.shields.io/badge/Spring%20Boot-3.3-6db33f) ![stack](https://img.shields.io/badge/React-18-61dafb) ![stack](https://img.shields.io/badge/PostgreSQL-16-336791) ![stack](https://img.shields.io/badge/Docker-compose-2496ed)
+[![CI](https://github.com/Abhishek360007/AI-Code-Review-Assist/actions/workflows/ci.yml/badge.svg)](https://github.com/Abhishek360007/AI-Code-Review-Assist/actions/workflows/ci.yml) ![stack](https://img.shields.io/badge/Java-17-orange) ![stack](https://img.shields.io/badge/Spring%20Boot-3.3-6db33f) ![stack](https://img.shields.io/badge/React-18-61dafb) ![stack](https://img.shields.io/badge/PostgreSQL-16-336791) ![stack](https://img.shields.io/badge/Docker-compose-2496ed)
 
 ## Features
 
