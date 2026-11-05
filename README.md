@@ -87,16 +87,18 @@ Run the backend tests (they use in-memory H2 and the demo analyzer, so no keys a
 cd server && ./mvnw test
 ```
 
-## Deploy (Render, free tier)
+## Deploy (Render + Neon, free tier)
 
-The repo includes a [`render.yaml`](render.yaml) Blueprint. It deploys a single service, built from the root [`Dockerfile`](Dockerfile), that serves the web app and the API from one URL, plus a managed PostgreSQL database.
+The app runs as a single service on [Render](https://render.com), built from the root [`Dockerfile`](Dockerfile), which serves the web app and the API from one URL. Data lives in a serverless PostgreSQL database on [Neon](https://neon.tech).
 
-1. Sign in to [render.com](https://render.com) with GitHub.
-2. Go to **New → Blueprint** and select this repository.
-3. When prompted, paste your `GEMINI_API_KEY`. `JWT_SECRET` and the database credentials are generated for you.
-4. Click **Apply** and wait for the first build (about 5–10 minutes).
+1. **Database:** create a free project on [neon.tech](https://neon.tech) and copy its connection string (`postgresql://…?sslmode=require`).
+2. **App:** sign in to Render with GitHub, go to **New → Blueprint** and select this repository. The [`render.yaml`](render.yaml) Blueprint is picked up automatically.
+3. When prompted, paste `DATABASE_URL` (the Neon string) and `GEMINI_API_KEY`. `JWT_SECRET` is generated for you.
+4. Click **Apply** and wait for the first build (about 5–10 minutes). Tables are created on first start.
 
-Every push to `main` redeploys automatically. Free services sleep after a period of inactivity, so the first request afterwards takes around 30–60 seconds.
+Every push to `main` redeploys automatically. Free services sleep when idle and Neon scales to zero, so the first request after a quiet period takes around 30–60 seconds.
+
+`DATABASE_URL` accepts any standard Postgres connection string, so Supabase, Railway or a self-hosted server work the same way.
 
 ## Configuration
 
@@ -110,7 +112,9 @@ All settings come from environment variables:
 | `GEMINI_MODEL` | `gemini-flash-latest` | Any Gemini model that supports structured output |
 | `GEMINI_FALLBACK_MODELS` | `gemini-flash-lite-latest,gemini-3.5-flash` | Tried in order if the main model is overloaded (with automatic retry) |
 | `AI_PROVIDER` | `auto` | `auto`, `gemini` or `demo` |
-| `DB_URL` / `DB_USER` / `DB_PASSWORD` | local `reviewassist` | PostgreSQL connection |
+| `DATABASE_URL` | empty | Postgres connection string, e.g. from Neon: `postgresql://user:pass@host/db?sslmode=require`. Takes priority over the `DB_*` variables |
+| `DB_URL` / `DB_USER` / `DB_PASSWORD` | local `reviewassist` | Alternative: JDBC URL plus credentials (or `DB_HOST` / `DB_PORT` / `DB_NAME`) |
+| `DB_POOL_SIZE` | `5` | Maximum database connections |
 | `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated allowed origins |
 | `REVIEW_MAX_CODE_CHARS` | `20000` | Maximum size of submitted code |
 | `REVIEW_PER_MINUTE_LIMIT` | `10` | Reviews per user per minute (`0` turns the limit off) |
