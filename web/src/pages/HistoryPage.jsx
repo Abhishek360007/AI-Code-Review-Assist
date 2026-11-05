@@ -75,9 +75,11 @@ export default function HistoryPage() {
             <tbody>
               {data.items.map((r) => (
                 <tr key={r.id}>
-                  <td className="title-cell">
-                    <Link to={`/reviews/${r.id}`}>{r.title}</Link>
-                    <span className="muted small">{r.lineCount} lines</span>
+                  <td>
+                    <div className="title-cell">
+                      <Link to={`/reviews/${r.id}`}>{r.title}</Link>
+                      <span className="muted small">{r.lineCount} lines</span>
+                    </div>
                   </td>
                   <td><span className="lang-tag">{LANGUAGE_LABELS[r.language] || r.language}</span></td>
                   <td className="num"><ScorePill score={r.score} /></td>

@@ -55,7 +55,7 @@ export default function AuthPage({ mode }) {
       <section className="auth-panel">
         <form className="card auth-card" onSubmit={onSubmit} noValidate>
           <h2>{isSignup ? 'Create your account' : 'Welcome back'}</h2>
-          <p className="muted">{isSignup ? 'It takes less than a minute.' : 'Sign in to run and review your code reviews.'}</p>
+          <p className="muted">{isSignup ? 'It takes less than a minute.' : 'Sign in to run reviews and see your history.'}</p>
 
           {isSignup ? (
             <>

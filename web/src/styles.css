@@ -333,9 +333,9 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--f
 .sparkline .area { fill: color-mix(in srgb, var(--brand) 12%, transparent); }
 .sparkline .point { fill: var(--surface); stroke: var(--brand); stroke-width: 2; cursor: pointer; }
 .stack-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; }
-.legend { list-style: none; padding: 0; margin: 16px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; font-size: 0.85rem; text-transform: capitalize; }
+.legend { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-wrap: wrap; gap: 10px 24px; font-size: 0.85rem; text-transform: capitalize; }
 .legend li { display: flex; align-items: center; gap: 8px; }
-.legend b { margin-left: auto; font-variant-numeric: tabular-nums; }
+.legend b { font-variant-numeric: tabular-nums; }
 .bars { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
 .bars li { display: grid; grid-template-columns: 120px 1fr 36px; align-items: center; gap: 10px; font-size: 0.875rem; }
 .bar-track { height: 10px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }

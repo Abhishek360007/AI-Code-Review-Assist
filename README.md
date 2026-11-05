@@ -4,6 +4,8 @@ A full-stack app that reviews source code with AI and returns a **structured** r
 
 [![CI](https://github.com/Abhishek360007/AI-Code-Review-Assist/actions/workflows/ci.yml/badge.svg)](https://github.com/Abhishek360007/AI-Code-Review-Assist/actions/workflows/ci.yml) ![stack](https://img.shields.io/badge/Java-17-orange) ![stack](https://img.shields.io/badge/Spring%20Boot-3.3-6db33f) ![stack](https://img.shields.io/badge/React-18-61dafb) ![stack](https://img.shields.io/badge/PostgreSQL-16-336791) ![stack](https://img.shields.io/badge/Docker-compose-2496ed)
 
+![Review page: score, severity-ranked findings and highlighted lines](docs/screenshots/review.png)
+
 ## Features
 
 - **Structured AI reviews.** Gemini is called with a JSON response schema, so the output always parses: a score from 0 to 100, a summary, strengths, and a list of issues (`CRITICAL` → `INFO`, plus a category such as bug, security or performance).
@@ -14,6 +16,15 @@ A full-stack app that reviews source code with AI and returns a **structured** r
 - **Offline demo mode.** With no API key set, a built-in rule engine produces reviews so the app works out of the box (useful for demos and CI).
 - **16 languages.** Java, Python, JavaScript, TypeScript, C, C++, C#, Go, Rust, Kotlin, PHP, Ruby, Swift, SQL, Shell and plain text.
 - **Light and dark themes.** The editor draft autosaves in the browser.
+- **Resilient AI calls.** Overloaded or slow models are retried, then backup models are tried in order. Each review records which model produced it.
+
+## Screenshots
+
+| Suggested version (diff) | Insights |
+|---|---|
+| ![Diff of the original code against the AI's corrected version](docs/screenshots/diff.png) | ![Insights dashboard with score trend and breakdowns](docs/screenshots/insights.png) |
+| **New review** | **History** |
+| ![Code editor with language picker and review options](docs/screenshots/new-review.png) | ![Review history table with scores and worst severity](docs/screenshots/history.png) |
 
 ## Architecture
 

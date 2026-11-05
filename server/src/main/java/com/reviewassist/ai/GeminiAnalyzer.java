@@ -124,9 +124,15 @@ public class GeminiAnalyzer implements CodeAnalyzer {
                         sleep(BACKOFF_MS * attempt);
                     }
                 } catch (ResourceAccessException e) {
-                    throw new AnalysisException("Could not reach the AI provider (timeout or network error). Please try again.", e);
+                    // Overloaded models sometimes hang instead of answering 503; move on to the next model.
+                    log.warn("Gemini model {} timed out or was unreachable: {}", candidate, e.getMessage());
+                    lastStatus = -1;
+                    break;
                 }
             }
+        }
+        if (lastStatus == -1) {
+            throw new AnalysisException("The AI provider did not respond in time. Please try again in a minute.");
         }
         throw new AnalysisException(describeHttpError(lastStatus));
     }
