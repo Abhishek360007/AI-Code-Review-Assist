@@ -1,0 +1,46 @@
+# All secrets and environment-specific values come from environment variables.
+# See ../.env.example for the full list.
+
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: review-assist
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/reviewassist}
+    username: ${DB_USER:reviewassist}
+    password: ${DB_PASSWORD:reviewassist}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+app:
+  jwt:
+    # Must be at least 32 characters. Generate one with: openssl rand -base64 48
+    secret: ${JWT_SECRET:}
+    ttl: ${JWT_TTL:12h}
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
+  review:
+    max-code-chars: ${REVIEW_MAX_CODE_CHARS:20000}
+    # Reviews each user may run per minute (0 disables the limit)
+    per-minute-limit: ${REVIEW_PER_MINUTE_LIMIT:10}
+  ai:
+    # auto   -> use Gemini when GEMINI_API_KEY is set, otherwise the offline demo analyzer
+    # gemini -> always use Gemini (fails at startup without a key)
+    # demo   -> always use the offline demo analyzer
+    provider: ${AI_PROVIDER:auto}
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: ${GEMINI_MODEL:gemini-2.5-flash}
+      base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
+      timeout: ${GEMINI_TIMEOUT:60s}
