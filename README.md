@@ -28,6 +28,38 @@ A full-stack app that reviews source code with AI and returns a **structured** r
 | **New review** | **History** |
 | ![Code editor with language picker and review options](docs/screenshots/new-review.png) | ![Review history table with scores and worst severity](docs/screenshots/history.png) |
 
+## Giving a demo
+
+Every language has a built-in demo snippet with realistic, deliberate flaws. Pick a language and the editor loads its sample automatically (or click **Load sample**):
+
+| Language | What the reviewer should catch |
+|---|---|
+| JavaScript | SQL injection, hard-coded API key, off-by-one crash, loose equality |
+| TypeScript | Missing `await`, `any` cache, async `forEach` that doesn't wait, unsafe `!` |
+| Python | SQL injection, `pickle` deserialization, bare `except`, mutable default arguments |
+| Java | SQL injection, leaked JDBC resources, `!=` on strings, string concatenation in a loop |
+| C++ | Buffer overflow, `delete` vs `delete[]`, returning a pointer to a local, off-by-one |
+| C | `gets`, off-by-one `malloc`, format-string bug, memory leak |
+| C# | `async void`, undisposed connections, SQL injection, swallowed exceptions |
+| Go | Ignored errors, data race, `defer` in a loop, nil-response panic |
+| Rust | `unwrap` panics, index out of bounds, needless clones, `unsafe` on empty strings |
+| Kotlin | SQL injection, `!!`, `GlobalScope`, uninitialized `lateinit` |
+| PHP | SQL injection, XSS, MD5 passwords, open redirect |
+| Ruby | N+1 queries, mass assignment, SQL injection, `eval`, open redirect |
+| Swift | Force unwraps, retain cycle, UI updates off the main thread, `try!` |
+| SQL | `SELECT *`, non-sargable `YEAR()`, `UPDATE` without `WHERE`, `= NULL`, storing CVVs |
+| Shell | Unquoted variables, `rm -rf $VAR/*`, hard-coded token, `curl -k`, `chmod 777`, `eval` |
+| Other | A Dockerfile with `:latest`, a baked-in secret and running as root |
+
+A suggested five-minute flow:
+
+1. **New review:** pick a language and click **Run review**.
+2. **Review page:** point out the score, then click a finding and the editor jumps to the highlighted line.
+3. **Suggested version:** show the diff of the AI's corrected code.
+4. Run two or three more languages, then open **Insights** to show the score trend and breakdowns.
+
+Tip: on the free hosting plan, open the site a minute before the demo to wake it up.
+
 ## Architecture
 
 ```

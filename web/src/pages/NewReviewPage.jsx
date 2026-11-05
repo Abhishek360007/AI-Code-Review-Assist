@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { ErrorNote, LANGUAGE_LABELS } from '../components/ui'
 import { useTheme } from '../context/ThemeContext'
-import { SAMPLES } from './samples'
+import { SAMPLES, isSampleOrEmpty, isSampleTitle } from './samples'
 
 const DRAFT_KEY = 'ra.draft'
 
@@ -21,8 +21,8 @@ export default function NewReviewPage() {
   const { theme } = useTheme()
   const [draft] = useState(loadDraft)
   const [language, setLanguage] = useState(draft?.language || 'javascript')
-  const [code, setCode] = useState(draft?.code ?? SAMPLES.javascript)
-  const [title, setTitle] = useState(draft?.title || '')
+  const [code, setCode] = useState(draft?.code ?? SAMPLES.javascript.code)
+  const [title, setTitle] = useState(draft ? draft.title || '' : SAMPLES.javascript.title)
   const [notes, setNotes] = useState(draft?.notes || '')
   const [meta, setMeta] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -55,9 +55,17 @@ export default function NewReviewPage() {
     }
   }
 
-  function loadSample() {
-    setCode(SAMPLES[language] || SAMPLES.javascript)
-    if (!SAMPLES[language]) setLanguage('javascript')
+  function applySample(lang) {
+    const sample = SAMPLES[lang]
+    if (!sample) return
+    setCode(sample.code)
+    if (isSampleTitle(title)) setTitle(sample.title)
+  }
+
+  // Switching language swaps in that language's sample, unless the user has typed their own code.
+  function changeLanguage(lang) {
+    setLanguage(lang)
+    if (isSampleOrEmpty(code)) applySample(lang)
   }
 
   return (
@@ -77,13 +85,15 @@ export default function NewReviewPage() {
       <div className="editor-layout">
         <div className="card editor-card">
           <div className="editor-toolbar">
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} aria-label="Language">
+            <select value={language} onChange={(e) => changeLanguage(e.target.value)} aria-label="Language">
               {(meta?.languages || Object.keys(LANGUAGE_LABELS)).map((l) => (
                 <option key={l} value={l}>{LANGUAGE_LABELS[l] || l}</option>
               ))}
             </select>
-            <button className="btn btn-ghost btn-sm" onClick={loadSample} type="button">Load sample</button>
-            <button className="btn btn-ghost btn-sm" onClick={() => setCode('')} type="button">Clear</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => applySample(language)} type="button"
+              title={`Load the ${LANGUAGE_LABELS[language] || language} demo snippet`}>Load sample</button>
+            <button className="btn btn-ghost btn-sm" type="button"
+              onClick={() => { setCode(''); if (isSampleTitle(title)) setTitle('') }}>Clear</button>
             <span className={`counter ${tooLong ? 'counter-over' : ''}`}>
               {lineCount} lines · {code.length.toLocaleString()} / {maxChars.toLocaleString()} chars
             </span>

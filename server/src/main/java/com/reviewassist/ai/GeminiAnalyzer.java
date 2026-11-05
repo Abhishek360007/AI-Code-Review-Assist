@@ -68,7 +68,13 @@ public class GeminiAnalyzer implements CodeAnalyzer {
         this.mapper = mapper;
 
         Duration timeout = config.timeout() == null ? Duration.ofSeconds(60) : config.timeout();
-        HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+        // HTTP/1.1 on purpose: with HTTP/2 the JDK client multiplexes every call over one shared
+        // connection, and a single timed-out request can leave that connection broken so that all
+        // following requests fail instantly. Separate HTTP/1.1 connections isolate failures.
+        HttpClient http = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
         JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(http);
         factory.setReadTimeout(timeout);
 
@@ -102,6 +108,7 @@ public class GeminiAnalyzer implements CodeAnalyzer {
         int lastStatus = 0;
         for (String candidate : models) {
             for (int attempt = 1; attempt <= ATTEMPTS_PER_MODEL; attempt++) {
+                long started = System.nanoTime();
                 try {
                     JsonNode response = client.post()
                             .uri("/models/{model}:generateContent", candidate)
@@ -124,9 +131,17 @@ public class GeminiAnalyzer implements CodeAnalyzer {
                         sleep(BACKOFF_MS * attempt);
                     }
                 } catch (ResourceAccessException e) {
-                    // Overloaded models sometimes hang instead of answering 503; move on to the next model.
-                    log.warn("Gemini model {} timed out or was unreachable: {}", candidate, e.getMessage());
                     lastStatus = -1;
+                    long elapsedMs = (System.nanoTime() - started) / 1_000_000;
+                    Throwable cause = e.getMostSpecificCause();
+                    log.warn("Gemini model {} failed after {} ms (attempt {}/{}): {}", candidate, elapsedMs, attempt,
+                            ATTEMPTS_PER_MODEL, cause.getClass().getSimpleName() + ": " + cause.getMessage());
+                    if (elapsedMs < 5_000 && attempt < ATTEMPTS_PER_MODEL) {
+                        // Failed straight away: a dropped connection, not a slow model. Retry the same model.
+                        sleep(BACKOFF_MS);
+                        continue;
+                    }
+                    // A genuine hang (overloaded model): move on to the next model.
                     break;
                 }
             }
