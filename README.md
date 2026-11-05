@@ -1,6 +1,6 @@
 # AI Code Review Assist
 
-**🎬 [Watch the 2-minute demo](https://abhishek360007.github.io/AI-Code-Review-Assist/demo/)** · **🔗 [Try the live app](https://ai-code-review-assist.onrender.com)**. The app is on Render's free plan, so the first load after it has been idle can take up to a minute.
+**🎬 [Watch the 2-minute demo](https://abhishek360007.github.io/AI-Code-Review-Assist/demo/)** · **🔗 [Try the live app](https://ai-code-review-assist.onrender.com)** · **📘 [Project guide (PDF)](https://abhishek360007.github.io/AI-Code-Review-Assist/AI-Code-Review-Assist-Project-Guide.pdf)**. The app is on Render's free plan, so the first load after it has been idle can take up to a minute.
 
 [![Captioned product demo: click to watch](docs/demo/demo-preview.gif)](https://abhishek360007.github.io/AI-Code-Review-Assist/demo/)
 
