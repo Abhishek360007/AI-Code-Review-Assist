@@ -1,0 +1,47 @@
+# Render Blueprint: one-click deploy of the app (web + API in one service) and a Postgres database.
+# Render dashboard -> New -> Blueprint -> pick this repository.
+
+databases:
+  - name: reviewassist-db
+    plan: free
+    databaseName: reviewassist
+    user: reviewassist
+
+services:
+  - type: web
+    name: ai-code-review-assist
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: reviewassist-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: reviewassist-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: reviewassist-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: reviewassist-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: reviewassist-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false # you'll be asked for it when creating the Blueprint
+      - key: AI_PROVIDER
+        value: auto
+      - key: REVIEW_PER_MINUTE_LIMIT
+        value: "5"

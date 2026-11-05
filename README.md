@@ -85,6 +85,17 @@ Run the backend tests (they use in-memory H2 and the demo analyzer, so no keys a
 cd server && ./mvnw test
 ```
 
+## Deploy (Render, free tier)
+
+The repo includes a [`render.yaml`](render.yaml) Blueprint. It deploys a single service, built from the root [`Dockerfile`](Dockerfile), that serves the web app and the API from one URL, plus a managed PostgreSQL database.
+
+1. Sign in to [render.com](https://render.com) with GitHub.
+2. Go to **New → Blueprint** and select this repository.
+3. When prompted, paste your `GEMINI_API_KEY`. `JWT_SECRET` and the database credentials are generated for you.
+4. Click **Apply** and wait for the first build (about 5–10 minutes).
+
+Every push to `main` redeploys automatically. Free services sleep after a period of inactivity, so the first request afterwards takes around 30–60 seconds.
+
 ## Configuration
 
 All settings come from environment variables:
