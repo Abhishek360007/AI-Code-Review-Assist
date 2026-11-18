@@ -262,7 +262,7 @@ public class GeminiAnalyzer implements CodeAnalyzer {
             issues.add(new Issue(
                     parseEnum(Severity.class, n.path("severity").asText(), Severity.MEDIUM),
                     parseEnum(Category.class, n.path("category").asText(), Category.MAINTAINABILITY),
-                    line.canConvertToInt() && line.asInt() > 0 ? line.asInt() : null,
+                    validLine(line, originalLineCount),
                     n.path("title").asText("Untitled issue"),
                     n.path("detail").asText(""),
                     n.path("fix").asText("")));
@@ -293,6 +293,19 @@ public class GeminiAnalyzer implements CodeAnalyzer {
      * Smaller models sometimes squash the corrected file onto one or two lines. Shown as a diff, that
      * looks like the whole file was deleted, so such output is treated as "no suggestion".
      */
+    /**
+     * The finding's line if it exists in the submitted file, otherwise null (file-wide).
+     * Models occasionally report a line past the end; the editor would then jump nowhere
+     * and highlight nothing, so such a finding is shown as file-wide instead.
+     */
+    static Integer validLine(JsonNode line, int originalLines) {
+        if (line == null || !line.canConvertToInt()) {
+            return null;
+        }
+        int n = line.asInt();
+        return n >= 1 && n <= Math.max(originalLines, 1) ? n : null;
+    }
+
     static boolean looksCollapsed(String improved, int originalLines) {
         if (improved == null || improved.isBlank() || originalLines < 6) {
             return false;
